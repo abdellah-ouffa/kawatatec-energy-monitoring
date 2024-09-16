@@ -1,0 +1,104 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Power Optimization Dashboard</h1>
+<div class="mb-4">
+    <label for="sensor-select" class="block text-sm font-medium text-gray-700">Select Sensor:</label>
+    <select id="sensor-select"
+        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+        {% for sensor in sensors %}
+        <option value="{{ sensor.id }}">{{ sensor.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+<div id="chart-container" class="bg-white p-4 rounded-lg shadow">
+    <canvas id="power-chart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script>
+    const ctx = document.getElementById('power-chart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'Current',
+                data: [],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'minute'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Current (A)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Updated WebSocket URL construction
+    const currentHost = window.location.host;
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const socketUrl = `${wsProtocol}//${currentHost}/ws/power_readings/`;
+
+    console.log("WebSocket URL:", socketUrl); // For debugging
+
+    const socket = new WebSocket(socketUrl);
+
+    socket.onopen = function (e) {
+        console.log("WebSocket connection established");
+        requestData(); // Request data immediately when connection is established
+    };
+
+    socket.onmessage = function (e) {
+        console.log("Received data:", e.data);
+        const data = JSON.parse(e.data);
+        const readings = data.readings;
+
+        if (readings && readings.length > 0) {
+            console.log(`Updating chart with ${readings.length} readings`);
+            chart.data.datasets[0].data = readings.map(r => ({ x: new Date(r.time), y: r.current }));
+            chart.update();
+            console.log("Chart updated with new data");
+        } else {
+            console.log("No readings received or empty readings array");
+        }
+    };
+
+    socket.onerror = function (error) {
+        console.error(`WebSocket Error: ${error}`);
+    };
+
+    socket.onclose = function (event) {
+        console.log(`WebSocket connection closed: ${event.code} ${event.reason}`);
+    };
+
+    const sensorSelect = document.getElementById('sensor-select');
+
+    function requestData() {
+        const selectedSensor = sensorSelect.value;
+        console.log(`Requesting data for sensor: ${selectedSensor}`);
+        socket.send(JSON.stringify({
+            'sensor_id': selectedSensor
+        }));
+    }
+
+    setInterval(requestData, 5000);
+    sensorSelect.addEventListener('change', requestData);
+</script>
+{% endblock %}
