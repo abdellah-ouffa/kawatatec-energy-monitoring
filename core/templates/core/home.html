@@ -1,14 +1,125 @@
 {% extends 'core/base.html' %}
 {% load static %}
+
 {% block content %}
-<div class="bg-white shadow-md rounded-lg p-8 mb-4 max-w-3xl mx-auto">
-    <div class="flex items-center mb-4">
-        <img src="{% static 'core/images/kawatatec_logo.jpg' %}" alt="Kawatatec Logo" class="h-12 bg-blue-500 p-1 mr-2">
-        <h1 class="text-2xl font-bold text-blue-500"></h1>
+<div class="bg-white shadow-md rounded-lg p-4 sm:p-8 mb-4 max-w-6xl mx-auto animate-fadeIn">
+    <div class="flex flex-col sm:flex-row items-center mb-6">
+        <img src="{% static 'core/images/kawatatec_logo.jpg' %}" alt="Kawatatec Logo" class="h-12 sm:h-16 bg-blue-500 p-1 sm:p-2 mb-2 sm:mb-0 sm:mr-4 rounded-lg hover-scale">
+        <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-[#006599] text-center sm:text-left animated-3d-text">Kawatatec IoT Solutions</h1>
     </div>
-    <h2 class="text-xl font-bold mb-2">Welcome to Kawatatec Power Consumption Optimization Dashboard</h2>
-    <p class="text-gray-700">
+    
+    <h2 class="text-lg sm:text-xl md:text-2xl font-bold mb-4 text-center sm:text-left">Welcome to Kawatatec Power Consumption Optimization Dashboard</h2>
+    
+    {% if user.is_authenticated %}
+        <div class="mt-6 text-center sm:text-left">
+            <a href="{% url 'dashboard' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 sm:py-3 px-4 sm:px-6 rounded inline-block hover-lift">
+                Go to Dashboard
+            </a>
+        </div>
+    {% else %}
+        <div class="mt-6 text-center sm:text-left">
+            <a href="{% url 'login' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 sm:py-3 px-4 sm:px-6 rounded inline-block hover-lift">
+                Login to Access Dashboard
+            </a>
+        </div>
+    {% endif %}
+
+    <p class="text-gray-700 mt-4 text-sm sm:text-base md:text-lg">
         Monitor and optimize your power consumption with our advanced tools and analytics. Our platform provides real-time insights, helping you to reduce energy waste and improve efficiency.
     </p>
+
+    <div class="mt-8 hover-shadow">
+        <h3 class="text-lg sm:text-xl font-bold mb-2 text-center sm:text-left">Our Head Office</h3>
+        <img src="{% static 'core/images/kawatatec_head_office.jpg' %}" alt="Kawatatec Head Office" class="rounded-lg shadow-lg w-full h-48 sm:h-64 object-cover hover-scale">
+        <p class="text-gray-600 mt-2 text-center text-sm sm:text-base">Located in the heart of innovation, our head office drives the future of IoT solutions.</p>
+    </div>
+
+    <!-- Image Carousel -->
+    <div x-data="carousel()" x-init="startAutoScroll()" class="mt-12 relative">
+        <h3 class="text-xl sm:text-2xl font-bold mb-6 text-center">Our Products</h3>
+        <div class="relative overflow-hidden rounded-lg shadow-lg">
+            <div class="flex transition-smooth" x-ref="slider">
+                <template x-for="(image, index) in images" :key="index">
+                    <div class="w-full flex-shrink-0">
+                        <img :src="image" :alt="`Product ${index + 1}`" class="w-full h-48 sm:h-64 md:h-80 object-cover">
+                    </div>
+                </template>
+            </div>
+            <button @click="prev()" class="carousel-button left-0 rounded-r-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 sm:w-6 sm:h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button @click="next()" class="carousel-button right-0 rounded-l-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 sm:w-6 sm:h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+        </div>
+        <div class="flex justify-center mt-4">
+            <template x-for="(_, index) in images" :key="index">
+                <button 
+                    @click="goToSlide(index)" 
+                    :class="{ 'bg-blue-500': currentImage === index, 'bg-gray-300': currentImage !== index }"
+                    class="carousel-indicator">
+                </button>
+            </template>
+        </div>
+    </div>
+
+    <!-- Product Categories -->
+    <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div class="bg-white p-4 rounded-lg shadow-md hover-card">
+            <img src="{% static 'core/images/kawa1.png' %}" alt="IoT Innovation" class="w-full h-40 sm:h-48 object-cover rounded-t-lg">
+            <h4 class="text-lg font-semibold mt-2">IoT Innovation</h4>
+            <p class="text-sm text-gray-600">Innovative IoT solutions for advanced industrial applications.</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-md hover-card">
+            <img src="{% static 'core/images/kawa2.jpg' %}" alt="Smart Cities" class="w-full h-40 sm:h-48 object-cover rounded-t-lg">
+            <h4 class="text-lg font-semibold mt-2">Smart Cities</h4>
+            <p class="text-sm text-gray-600">Empowering smart city infrastructure with cutting-edge IoT technology.</p>
+        </div>
+        <div class="bg-white p-4 rounded-lg shadow-md hover-card">
+            <img src="{% static 'core/images/kawa3.jpg' %}" alt="Advanced IoT" class="w-full h-40 sm:h-48 object-cover rounded-t-lg">
+            <h4 class="text-lg font-semibold mt-2">Advanced IoT</h4>
+            <p class="text-sm text-gray-600">Explore our comprehensive IoT solutions for industrial advancement.</p>
+        </div>
+    </div>
 </div>
+
+<script>
+    function carousel() {
+        return {
+            currentImage: 0,
+            images: [
+                "{% static 'core/images/kawa1.png' %}",
+                "{% static 'core/images/kawa2.jpg' %}",
+                "{% static 'core/images/kawa3.jpg' %}",
+                "{% static 'core/images/kawa4.jpg' %}",
+                "{% static 'core/images/kawa5.png' %}",
+                "{% static 'core/images/kawa6.jpg' %}"
+            ],
+            next() {
+                this.currentImage = (this.currentImage + 1) % this.images.length;
+                this.updateSlide();
+            },
+            prev() {
+                this.currentImage = (this.currentImage - 1 + this.images.length) % this.images.length;
+                this.updateSlide();
+            },
+            goToSlide(index) {
+                this.currentImage = index;
+                this.updateSlide();
+            },
+            updateSlide() {
+                this.$refs.slider.style.transform = `translateX(-${this.currentImage * 100}%)`;
+            },
+            startAutoScroll() {
+                setInterval(() => {
+                    this.next();
+                }, 5000); // Change slide every 5 seconds
+            }
+        }
+    }
+</script>
 {% endblock %}
